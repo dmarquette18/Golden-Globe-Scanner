@@ -38,7 +38,7 @@ def findHosts(taggedTweets):
     else:
         return[host1, host2]
 
-tweets = data(2015)
+tweets = data(2013)
 taggedTweets = hostTweets(tweets)
 hosts = findHosts(taggedTweets)
 print(hosts)
