@@ -6,24 +6,35 @@ def get_data(year):
     return pd.read_json(name)
 
 def extraction_winner_one_word(tweet: str, criteria: str, forward: bool): 
-    candidate_answers = []
-    splits = tweet.lower().split()
+    candidate_answers = {}
+    splits = word_tokenize(tweet)
+    tags = pos_tag(splits)
     try: 
         index = splits.index(criteria)
     except ValueError: 
         return None
-    curr = ""
     if forward: 
         while index > 0:
             index -= 1
-            curr = splits[index] + " " + curr 
-            candidate_answers.append(curr) 
+            if tags[index][1] == 'NNP' and tags[index-1][1] == 'NNP': 
+                if splits[index] not in gg and splits[index-1] not in gg: 
+                    name = splits[index-1] + " " + splits[index]
+                    if name in candidate_answers:
+                        candidate_answers[name] += 1
+                    else: 
+                        candidate_answers[name] = 1
     else: 
         while index < len(splits) - 1: 
             index += 1
-            curr = curr + " " + splits[index]
-            candidate_answers.append(curr) 
-    return vote_candidate(candidate_answers)
+            if tags[index][1] == 'NNP':  
+                curr = curr + " " + splits[index]
+                candidate_answers.append(curr) 
+    
+    #sort the dict and return the highest vote result
+    candidate_answers = sorted(candidate_answers.keys(), key = lambda item: item[1], reverse=True)
+    if len(candidate_answers) == 0:
+        return None
+    return candidate_answers
 
 def extraction_winner_two_words(tweet: str, criteria: str, forward: bool): 
     candidate_answers = []
@@ -64,10 +75,10 @@ def vote_candidate(candidates: list):
             string = string + " " + splits[index]
     return sorted(cand.items(), key = lambda item: item[1], reverse=True)[:2]
 
-def get_candidates(df, lst, func, forward):
-    df_answers = pd.DataFrame(columns=lst) 
-    for i in lst: 
-        df_answers[i] = pd.Series(map(func, df['text'], [i for _ in range(df.shape[0])], [forward for _ in range(df.shape[0])]))
+def get_candidates(df, criteria, func, forward):
+    df_answers = pd.DataFrame(columns=[criteria]) 
+    df_answers[criteria] = pd.Series(np.vectorize(func)(df['text'], [criteria for _ in range(df.shape[0])], [forward for _ in range(df.shape[0])]))
+    #df_answers[criteria] = pd.Series(map(func, df['text'], [criteria for _ in range(df.shape[0])], [forward for _ in range(df.shape[0])]))
     return df_answers.dropna(how="all")
 
 df2013 = get_data(2013)
@@ -78,5 +89,30 @@ before_double_list = ['for winning', 'getting nominated','was named' ]
 after_list =  ['congratulates', 'announce', 'nominated', 'wtf', 'nominee']
 after_double_list = ['goes to', 'awarded to', 'cheer for', 'cheering for', 'cheering on', 'congratulations to']
 
-get_candidates(df2013, before_list, extraction_winner_one_word, True)
-get_candidates(df2013, after_double_list, extraction_winner_two_words, False)
+result_before_one_word = get_candidates(df2013, 'won', extraction_winner_one_word, True)
+
+awards = ['best actress', 'best actor', 'best director', 'best supporting actress ']
+sub2013 = getDfCandidateText(df2013)
+def getDfCandidateText(df):
+    return df.filter(items = result_before_one_word.index, axis = 0).merge(result_before_one_word, left_index=True, right_index=True).drop(['user','id','timestamp_ms'], axis=1)
+
+def countResult(df, criteria): 
+    count = {}
+    def countName(name):
+        for n in name: 
+            if n not in count:
+                count[n] = 1
+            else:
+                count[n]+=1
+    np.vectorize(countName)(df[criteria])
+    return sorted(count.items(), key = lambda item:item[1], reverse=True)
+
+def resultFindAward(df, criteria):
+    award_winner = {}
+    def find_award(tweet, names): 
+        index = -1
+        for award in awards:
+            if award in tweet:
+                award_winner[award] = names[0]
+    np.vectorize(find_award)(df['text'], df[criteria])
+    return sorted(award_winner.items(), key = lambda item:item[1], reverse=True)  
