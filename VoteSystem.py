@@ -1,4 +1,4 @@
-from trimmer import CandidateTrimmer, OnlyBest, ThreeWord
+
 
 def voteCounter(rawCand):
     candidates = dict()
