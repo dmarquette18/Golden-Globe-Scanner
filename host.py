@@ -38,10 +38,11 @@ def findHosts(taggedTweets):
     else:
         return[host1, host2]
 
-tweets = data(2013)
-taggedTweets = hostTweets(tweets)
-hosts = findHosts(taggedTweets)
-print(hosts)
+def host(year):
+    tweets = data(year)
+    taggedTweets = hostTweets(tweets)
+    hosts = findHosts(taggedTweets)
+    return hosts
 
 
 #def sortDict(dictio):
