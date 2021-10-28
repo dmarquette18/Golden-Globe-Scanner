@@ -57,6 +57,21 @@ def main():
     run when grading. Do NOT change the name of this function or
     what it returns.'''
     # Your code here
+    finalAnswers = {"hosts": "", "award_data":""}
+    awardDict = {}
+    if year > 2015:
+        awards = OFFICIAL_AWARDS_1315
+    else:
+        awards = OFFICIAL_AWARDS_1819
+    for item in awards:
+        tempDict = {}
+        tempDict["nominees"] = get_nominees(year)
+        tempDict["winner"] = get_winner(year)
+        tempDict["presenters"] = get_presenters(year)
+        awardDict[item] = tempDict
+    finalAnswers["award_data"] = awardDict
+    finalAnswers["hosts"] = get_hosts(year)
+    finalAnswers["awards"] = get_awards(year)
     return
 
 if __name__ == '__main__':
