@@ -110,11 +110,35 @@ def get_awardsKeywords(awards):
 
     return keyDict
 
+def get_unique_keys(keyDict):
+    uniquekeys ={}
+    for key in keyDict:
+        commonWords = {}
+        commonWords[key] = ["i"]
+        for word in keyDict[key]:
+            for key2 in keyDict:
+                if key2 != key and word in keyDict[key2]:
+                    commonWords[key] = commonWords[key].append(word)
+    
+    for key in keyDict:
+        for i, word in enumerate(keyDict[key]):
+            if word in commonWords[key]:
+                keyDict[key].remove(word)
+    
+    print(keyDict)
+    return keyDict
+
+
+
+    
+
 keyDict = get_awardsKeywords(basicAwards)
+print(get_unique_keys(keyDict))
 nomCand = {}
 nomCand[basicAwards[2]] = NomGather(basicAwards[2], keyDict[basicAwards[2]])
 testVote = voteCounter(nomCand[basicAwards[2]])
 testVote = sortVote(testVote)
+
 #testVote = nipNames(testVote)
 print(testVote)
 

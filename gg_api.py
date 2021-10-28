@@ -30,7 +30,7 @@ def get_nominees(year):
 def get_winner(year):
     '''Winners is a dictionary with the hard coded award
     names as keys, and each entry containing a single string.
-    Do NOT change the name of this function or what it returns.'''
+    Do NOT change the name of this function or what it returns'''
     # Your code here
     return winners
 
@@ -59,15 +59,16 @@ def main():
     # Your code here
     finalAnswers = {"hosts": "", "award_data":""}
     awardDict = {}
-    if year > 2015:
+    year = 2015
+    if year >= 2015:
         awards = OFFICIAL_AWARDS_1315
     else:
         awards = OFFICIAL_AWARDS_1819
     for item in awards:
         tempDict = {}
-        tempDict["nominees"] = get_nominees(year)
-        tempDict["winner"] = get_winner(year)
-        tempDict["presenters"] = get_presenters(year)
+        tempDict["nominees"] = get_nominees(year)[item]
+        tempDict["winner"] = get_winner(year)[item]
+        tempDict["presenters"] = get_presenters(year)[item]
         awardDict[item] = tempDict
     finalAnswers["award_data"] = awardDict
     finalAnswers["hosts"] = get_hosts(year)
