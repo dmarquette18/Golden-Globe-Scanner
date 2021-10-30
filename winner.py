@@ -95,8 +95,8 @@ def get_candidates(df, criteria, func, forward):
     #df_answers[criteria] = pd.Series(map(func, df['text'], [criteria for _ in range(df.shape[0])], [forward for _ in range(df.shape[0])]))
     return df_answers.dropna(how="all")
 
-def getDfCandidateText(df):
-    return df.filter(items = result_before_one_word.index, axis = 0).merge(result_before_one_word, left_index=True, right_index=True).drop(['user','id','timestamp_ms'], axis=1)
+def getDfCandidateText(df, filterDf):
+    return df.filter(items = filterDf.index, axis = 0).merge(filterDf, left_index=True, right_index=True).drop(['user','id','timestamp_ms'], axis=1)
 
 def countResult(name_list): 
     count = {}
@@ -182,7 +182,7 @@ drop_list = ['by', 'in', 'a', '-', 'or', 'an', ',', 'for', 'role','made']
 def winner(year): 
     df = get_data(year)
     result_before_one_word = get_candidates(df, 'won', extraction_winner_one_word, True)
-    sub = getDfCandidateText(df)
+    sub = getDfCandidateText(df, result_before_one_word)
     awards_dict = convert_official_to_dict(OFFICIAL_AWARDS_1315)
     result = result_find_official_awards(sub, awards_dict)
     return result
