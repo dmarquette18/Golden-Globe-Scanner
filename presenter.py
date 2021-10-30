@@ -2,6 +2,7 @@ import pandas as pd
 from nltk import word_tokenize, pos_tag_sents, pos_tag
 import spacy
 #import en_core_web_sm
+import re
 
 
 #nlp = en_core_web_sm.load()
@@ -38,8 +39,8 @@ def presenterTweets(tweets):
 def presenterTweets2(tweets):
     allPresentTweets = tweets[tweets['text'].str.contains('(?i)presenting|presenter|presented|presents')]
     relPresentTweets = allPresentTweets[~allPresentTweets['text'].str.contains('(?i)represent')]
-    taggedTweets = relPresentTweets['text'].apply(lambda x: list(nlp(x).ents.labels_))
-    return taggedTweets
+    #taggedTweets = relPresentTweets['text'].apply(lambda x: list(nlp(x)))
+    return relPresentTweets
 
 def Di(taggedTweets):
     votes = {}
@@ -74,9 +75,36 @@ for key in di:
 
 # tried to use spacy
 pres2 = presenterTweets2(df)
-print(type(pres2))
-for i in pres2:
-    print(i)
+print(pres2.shape[0])
+#print(pres2.info())
+#print(pres2.head())
+ppl = set()
+for i in pres2['text']:
+    i = nlp(i)
+    #print(type(i))
+    #print(i)
+    for ent in i.ents:
+        #print('here')
+        #print(ent.text, ent.label_)
+        #print(ent.text)
+        #print(not any([char in ['&', 'RT', '@'] for char in ent.text]))
+        if ent.label_ == 'PERSON' and 2 <= len(ent.text.split()) <= 3 and not any([char in ['&', 'RT', '@', ':', '/'] for char in ent.text]):
+            nameParts = ent.text.split()
+            print('before: ', nameParts)
+            for name in nameParts:
+                # check if it's a name and has 's => redundant
+                if "'s" in name:
+                    nameParts[nameParts.index(name)] = re.sub("'s", '', name)
+                # check to see if present was part of the name
+                if 'present' in name.lower():
+                    nameParts.remove(name)
+
+            print('after: ', nameParts)
+            if len(nameParts) >= 2:
+                ppl.add(' '.join(nameParts).lower())
+for pp in ppl:
+    print(pp)
+
 #try:
 #    print(pres2.head())
 #except:
