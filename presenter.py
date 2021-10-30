@@ -90,7 +90,7 @@ for i in pres2['text']:
         #print(not any([char in ['&', 'RT', '@'] for char in ent.text]))
         if ent.label_ == 'PERSON' and 2 <= len(ent.text.split()) <= 3 and not any([char in ['&', 'RT', '@', ':', '/'] for char in ent.text]):
             nameParts = ent.text.split()
-            print('before: ', nameParts)
+            #print('before: ', nameParts)
             for name in nameParts:
                 # check if it's a name and has 's => redundant
                 if "'s" in name:
@@ -99,7 +99,7 @@ for i in pres2['text']:
                 if 'present' in name.lower():
                     nameParts.remove(name)
 
-            print('after: ', nameParts)
+            #print('after: ', nameParts)
             if len(nameParts) >= 2:
                 ppl.add(' '.join(nameParts).lower())
 for pp in ppl:
@@ -116,18 +116,18 @@ for pp in ppl:
 #for i in di2:
 #    print(i)
 
-"""
+
 # Uses txt file of presenters and awards and sees if the names I got are in the txt file
 file1 = open('preswiki.txt', 'r')
 Lines = file1.readlines()
 #print(Lines)
 for line in Lines:
     split = line.split()
-    if ' '.join(split[:2]).lower() in di2:
+    if ' '.join(split[:2]).lower() in ppl:
         print(' '.join(split[:2]).lower(), 'yes')
     else:
         print(' '.join(split[:2]).lower(), 'no')
-"""
+
 """
 # look at the Aziz Tweets
 allPresentTweets = df[df['text'].str.contains('(?i)presenting|presenter|presented|presents')]
