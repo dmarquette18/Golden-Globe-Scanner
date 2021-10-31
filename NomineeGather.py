@@ -343,7 +343,7 @@ def finalizeCategories(nameDict, awardDict):
                 break
     for item in finalAwards:
         while len(finalAwards[item]) < 4:
-            finalAwards[item].append("NA")
+            finalAwards[item].append("paul bunyon")
     return finalAwards
 
           
