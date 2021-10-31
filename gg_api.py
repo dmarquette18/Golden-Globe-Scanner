@@ -2,6 +2,7 @@
 
 from host import host
 from winner import winner
+from presenter import presenter
 from AwardNames import findAwardNames
 from sentiment import get_sentiments
 from redCarpet import red_carpet
@@ -45,6 +46,7 @@ def get_presenters(year):
     names as keys, and each entry a list of strings. Do NOT change the
     name of this function or what it returns.'''
     # Your code here
+    presenters = presenter(year)
     return presenters
 
 def pre_ceremony():

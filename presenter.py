@@ -48,6 +48,13 @@ def presenterTweets2(tweets):
 
 # Using Spacy
 def process(pres, award_words):
+    """
+    inputs:
+        df pres of tweets with the word "present" in them
+        set award_words of keywords of awards, e.g. 'comedy', 'musical', 'actor'...
+    returns:
+        dictionary ppl of form {presenter: {award_word1: x, award_word2: y ...}}
+    """
     ppl = {} # {presenter: {award_word1: x, award_word2: y ...}}
     for i in pres['text']:
         i = nlp(i)
@@ -78,10 +85,13 @@ def process(pres, award_words):
 
 def findPresenters(awardNames, awardWeights, scanDict):
     """
-    awardNames is a list
-    awardWeights is a dict - {word1: num, word2: num}
-    scanDict is a dict - {presenter1: {keyword1: count, keyword2: count}
-                          presenter2: {keyword1: count, keyword2: count}}
+    inputs:
+        awardNames is a list
+        awardWeights is a dict - {word1: num, word2: num}
+        scanDict is a dict - {presenter1: {keyword1: count, keyword2: count}
+                            presenter2: {keyword1: count, keyword2: count}}
+    returns: 
+        dictionary finalMapping pf form {awardName1: [presenter1, presenter2], awardName2: [presenter1, presenter2]...}
     """
     # make a result dictionary - {awardName: [presenter1, presenter2]}
     finalMapping = {}
@@ -109,18 +119,20 @@ def findPresenters(awardNames, awardWeights, scanDict):
 #    for wrd, count in ppl[person].items():
 #        print('\t', wrd, ': ', count)
 
-def presenters(year):
+def presenter(year):
     award_names = chooseAwards(year)
     award_words = awardWords(year)
     df = data(year)
     pres = presenterTweets2(df)
     ppl = process(pres, award_words)
+    for key, val in ppl.items():
+        print(key, ': ', val)
     final = findPresenters(award_names, award_weights, ppl)
     return final
     #for key, value in final.items():
     #    print(key, ': ', value)
-"""    
-fin = presenters(2013)
+
+   
+fin = presenter(2013)
 for key, value in fin.items():
     print(key, ': ', value)
-"""
