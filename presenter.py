@@ -11,6 +11,41 @@ nlp = spacy.load("en_core_web_sm")
 gg = ['golden', 'globe', 'globes', 'Golden', 'Globe', 'Globes', 'goldenglobes', 'GoldenGlobes','RT']
 OFFICIAL_AWARDS_1315 = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
 OFFICIAL_AWARDS_1819 = ['best motion picture - drama', 'best motion picture - musical or comedy', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best performance by an actress in a motion picture - musical or comedy', 'best performance by an actor in a motion picture - musical or comedy', 'best performance by an actress in a supporting role in any motion picture', 'best performance by an actor in a supporting role in any motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best motion picture - animated', 'best motion picture - foreign language', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best television series - musical or comedy', 'best television limited series or motion picture made for television', 'best performance by an actress in a limited series or a motion picture made for television', 'best performance by an actor in a limited series or a motion picture made for television', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best performance by an actress in a television series - musical or comedy', 'best performance by an actor in a television series - musical or comedy', 'best performance by an actress in a supporting role in a series, limited series or motion picture made for television', 'best performance by an actor in a supporting role in a series, limited series or motion picture made for television', 'cecil b. demille award']
+awardWeights = {'supporting': 10, 'drama': 10, 'comedy': 10, 'made': 10}
+
+def findPresenters(awardNames, awardWeights, scanDict):
+    """
+    awardNames is a list
+    awardWeights is a dict - {word1: num, word2: num}
+    scanDict is a dict - {presenter1: {keyword1: count, keyword2: count}
+                          presenter2: {keyword1: count, keyword2: count}}
+    """
+    # make a result dictionary - {awardName: [presenter1, presenter2]}
+    finalMapping = {}
+    for award in awardNames:
+        finalMapping[award] = []
+    # loop over presenters and find match
+    for presenter in scanDict:
+        matchNum = {}
+        for award in awardNames:
+            matchNum[award] = 0
+        for award in matchNum:
+            for word in scanDict[presenter]:
+                if word in award:
+                    score = scanDict[presenter][word]
+                    if word in awardWeights:
+                        score *= awardWeights[word]
+                    matchNum[award] += score
+        matched = max(matchNum, key=matchNum.get)
+        finalMapping[matched].append(presenter)
+    return finalMapping
+
+
+def addTallyToDict(strng, dictio):
+    if strng in dictio:
+        dictio[strng] += 1
+    else:
+        dictio[strng] = 1
 
 def awardWords(year):
     if year > 2015:
@@ -39,7 +74,6 @@ def presenterTweets(tweets):
 def presenterTweets2(tweets):
     allPresentTweets = tweets[tweets['text'].str.contains('(?i)presenting|presenter|presented|presents')]
     relPresentTweets = allPresentTweets[~allPresentTweets['text'].str.contains('(?i)represent')]
-    #taggedTweets = relPresentTweets['text'].apply(lambda x: list(nlp(x)))
     return relPresentTweets
 
 def Di(taggedTweets):
@@ -60,7 +94,7 @@ def Di(taggedTweets):
     return sortedVotes
 
 award_words = awardWords(2013)
-print(award_words)
+#print(award_words)
 
 df = data(2013)
 """
@@ -74,41 +108,59 @@ for key in di:
 #    print(key, ': ', value)
 
 # tried to use spacy
-pres2 = presenterTweets2(df)
-print(pres2.shape[0])
-#print(pres2.info())
-#print(pres2.head())
-ppl = set()
-for i in pres2['text']:
-    i = nlp(i)
-    #print(type(i))
-    #print(i)
-    for ent in i.ents:
-        #print('here')
-        #print(ent.text, ent.label_)
-        #print(ent.text)
-        #print(not any([char in ['&', 'RT', '@'] for char in ent.text]))
-        if ent.label_ == 'PERSON' and 2 <= len(ent.text.split()) <= 3 and not any([char in ['&', 'RT', '@', ':', '/'] for char in ent.text]):
-            nameParts = ent.text.split()
-            #print('before: ', nameParts)
-            for name in nameParts:
-                # check if it's a name and has 's => redundant
-                if "'s" in name:
-                    nameParts[nameParts.index(name)] = re.sub("'s", '', name)
-                # check to see if present was part of the name
-                if 'present' in name.lower():
-                    nameParts.remove(name)
+def process(pres):
+    ppl = {} # {presenter: {award_word1: x, award_word2: y ...}}
+    for i in pres['text']:
+        i = nlp(i)
+        peeps = set()
+        award_keywords = []
 
-            #print('after: ', nameParts)
-            if len(nameParts) >= 2:
-                ppl.add(' '.join(nameParts).lower())
-for pp in ppl:
-    print(pp)
+        for token in i:
+            if token.text.lower() in award_words:
+                award_keywords.append(token.text.lower())
+        for ent in i.ents:
+            if ent.label_ == 'PERSON' and 2 <= len(ent.text.split()) <= 3 and not any([char in ['&', 'RT', '@', ':', '/'] for char in ent.text]):
+                nameParts = ent.text.split()
+                for name in nameParts:
+                    # check if it's a name and has 's => redundant
+                    if "'s" in name:
+                        nameParts[nameParts.index(name)] = re.sub("'s", '', name)
+                    # check to see if present was part of the name
+                    if 'present' in name.lower():
+                        nameParts.remove(name)
+                if len(nameParts) >= 2:
+                    peeps.add(' '.join(nameParts).lower())
+        for peep in peeps:
+            if peep not in ppl:
+                ppl[peep] = {}
+            for keyword in award_keywords:
+                    addTallyToDict(keyword, ppl[peep])
+    return(ppl)
+
+#print(ppl)
+#for person in ppl:
+#    print(person)
+#    for wrd, count in ppl[person].items():
+#        print('\t', wrd, ': ', count)
+
+award_words = awardWords(2013)
+df = data(2013)
+pres = presenterTweets2(df)
+ppl = process(pres)
+final = findPresenters(OFFICIAL_AWARDS_1315, awardWeights, ppl)
+for key, value in final.items():
+    print(key, ': ', value)
+
+
+
+
+#for pp in ppl:
+#    print(pp)
 
 #try:
-#    print(pres2.head())
+#    print(pres.head())
 #except:
-#    print(pres2)
+#    print(pres)
 
 
 
@@ -116,7 +168,7 @@ for pp in ppl:
 #for i in di2:
 #    print(i)
 
-
+"""
 # Uses txt file of presenters and awards and sees if the names I got are in the txt file
 file1 = open('preswiki.txt', 'r')
 Lines = file1.readlines()
@@ -127,7 +179,7 @@ for line in Lines:
         print(' '.join(split[:2]).lower(), 'yes')
     else:
         print(' '.join(split[:2]).lower(), 'no')
-
+"""
 """
 # look at the Aziz Tweets
 allPresentTweets = df[df['text'].str.contains('(?i)presenting|presenter|presented|presents')]
