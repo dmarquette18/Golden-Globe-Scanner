@@ -83,7 +83,7 @@ def main():
     # finalAnswers["hosts"] = get_hosts(year)
     #finalAnswers["awards"] = get_awards(year)
 
-    #finalAnswers["sentiments"] = get_sentiments(winner_dict, finalAnswers["awards"])
+    finalAnswers["sentiments"] = get_sentiments(year, winner_dict)
     finalAnswers["red_carpet"] = red_carpet(year)
     print(finalAnswers)
     with open("answer.json" , 'w') as f:
