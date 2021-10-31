@@ -81,11 +81,12 @@ def main():
         awardDict[item] = tempDict
     finalAnswers["award_data"] = awardDict
     # finalAnswers["hosts"] = get_hosts(year)
-    finalAnswers["awards"] = get_awards(year)
+    #finalAnswers["awards"] = get_awards(year)
 
-    finalAnswers["sentiments"] = get_sentiments(winner_dict, finalAnswers["awards"])
+    #finalAnswers["sentiments"] = get_sentiments(winner_dict, finalAnswers["awards"])
     finalAnswers["red_carpet"] = red_carpet(year)
-    with open("answer.txt" , 'wb') as f:
+    print(finalAnswers)
+    with open("answer.json" , 'w') as f:
         json.dump(finalAnswers, f)
     return
 
