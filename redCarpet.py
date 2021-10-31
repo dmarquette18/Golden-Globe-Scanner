@@ -6,6 +6,10 @@ nlp = spacy.load("en_core_web_sm")
 #find tweets with "act"
 #find the quoted portion inside the tweet, which captures the act. 
 
+def get_data(year):
+    name = 'gg{}.json'.format(year)
+    return pd.read_json(name)
+
 def find_tweets_red_carpet(df): 
     red_carpet_df = pd.DataFrame()
     for index, row in df.iterrows(): 
@@ -56,7 +60,8 @@ def find_controversial(df):
     return count[0][0]
 
 
-def red_carpet(df):
+def red_carpet(year):
+    df = get_data(year)
     red_carpet_df = find_tweets_red_carpet(df).drop(['id', 'timestamp_ms','user'], axis=1)
     ans = {'worst dressed': "", 
            'best dressed': "",
