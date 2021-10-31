@@ -87,7 +87,6 @@ def calc_translation(result, answer):
 
             score_by_results[r][a] = text(r, a)
             score_by_answers[a][r] = score_by_results[r][a]
-
     for r in score_by_results:
         cnt = 0
         ranking = score_by_results[r].most_common()
@@ -171,12 +170,12 @@ def score_structured(year, answers, info_type):
     results = getattr(gg_api, 'get_%s' % info_type)(year)
     length = 26
 
-    if info_type == "nominees":
-        tempans = answers['award_data']['cecil b. demille award']
-        del answers['award_data']['cecil b. demille award']
-        tempres = results['cecil b. demille award']
-        del results['cecil b. demille award']
-        length = 25
+    # if info_type == "nominees":
+    #     tempans = answers['award_data']['cecil b. demille award']
+    #     del answers['award_data']['cecil b. demille award']
+    #     tempres = results['cecil b. demille award']
+    #     del results['cecil b. demille award']
+    #     length = 25
 
     for a in answers['award_data']:
         if info_type == 'winner':
@@ -210,7 +209,6 @@ def main(years, grading):
             answers = json.load(f)
 
         answers['awards'] = list(answers['award_data'].keys())
-
         for g in grading:
             if g in ['hosts', 'awards']:
                 scores[y][g]['spelling'], scores[y][g]['completeness'] = score_unstructured(y, answers, g)
@@ -222,9 +220,9 @@ def main(years, grading):
     pprint(scores)
 
 if __name__ == '__main__':
-    years = ['2013', '2015']
-    grading = ["hosts", "awards", "nominees", "presenters", "winner"]
-
+    years = ['2013']
+    # grading = ["hosts", "awards", "nominees", "presenters", "winner"]
+    grading = ["hosts", "awards", "presenters", "winner"]
     if len(sys.argv) > 1:
         if '2013' in sys.argv:
             years = ['2013']
