@@ -3,7 +3,10 @@
 from host import host
 from winner import winner
 from AwardNames import findAwardNames
+from sentiment import get_sentiments
+from redCarpet import red_carpet
 import pickle
+import json 
 
 OFFICIAL_AWARDS_1315 = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
 OFFICIAL_AWARDS_1819 = ['best motion picture - drama', 'best motion picture - musical or comedy', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best performance by an actress in a motion picture - musical or comedy', 'best performance by an actor in a motion picture - musical or comedy', 'best performance by an actress in a supporting role in any motion picture', 'best performance by an actor in a supporting role in any motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best motion picture - animated', 'best motion picture - foreign language', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best television series - musical or comedy', 'best television limited series or motion picture made for television', 'best performance by an actress in a limited series or a motion picture made for television', 'best performance by an actor in a limited series or a motion picture made for television', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best performance by an actress in a television series - musical or comedy', 'best performance by an actor in a television series - musical or comedy', 'best performance by an actress in a supporting role in a series, limited series or motion picture made for television', 'best performance by an actor in a supporting role in a series, limited series or motion picture made for television', 'cecil b. demille award']
@@ -68,19 +71,22 @@ def main():
     else:
         awards = OFFICIAL_AWARDS_1819
     winner_dict = get_winner(year)
-    #nominee_dict = get_nominees(year)
-    #presenter_dict = get_presenters(year)
+    # nominee_dict = get_nominees(year)
+    # presenter_dict = get_presenters(year)
     for item in awards:
         tempDict = {}
-    #    #tempDict["nominees"] = nominee_dict[item]
+    #     tempDict["nominees"] = nominee_dict[item]
         tempDict["winner"] = winner_dict[item]
-    #     #tempDict["presenters"] = presenter_dict[item]
+    #     tempDict["presenters"] = presenter_dict[item]
         awardDict[item] = tempDict
-    # finalAnswers["award_data"] = awardDict
+    finalAnswers["award_data"] = awardDict
     # finalAnswers["hosts"] = get_hosts(year)
     finalAnswers["awards"] = get_awards(year)
+
+    finalAnswers["sentiments"] = get_sentiments(winner_dict, finalAnswers["awards"])
+    finalAnswers["red_carpet"] = red_carpet(year)
     with open("answer.txt" , 'wb') as f:
-        pickle.dump((finalAnswers), f)
+        json.dump(finalAnswers, f)
     return
 
 if __name__ == '__main__':
