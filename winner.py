@@ -139,7 +139,6 @@ def process_sub_df(df, candidates_df, awards_dict):
             else: 
                 count_dict[name] = 1
         result = sorted(count_dict.items(), key = lambda key: key[1], reverse=True)
-        print(result)
         award_winner[award] = result[0][0]
         names = []
         for i in range(1,5): 

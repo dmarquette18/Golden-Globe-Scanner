@@ -11,7 +11,6 @@ import re
 import pickle
 from nltk import word_tokenize, pos_tag
 def quickNomGather(personOrMovie, year):
-    print("started quick search")
     file_name = 'gg{}.json'.format(year)
     pand = pandas.read_json(file_name)
     criteria = ["nominated for", "nominee for", "congrats to", "should have won", "wins", "nominee"]
@@ -22,16 +21,11 @@ def quickNomGather(personOrMovie, year):
         tempTotal += tempList
     
     finCand = tempTotal
-    print("starting findNN")
     nomCand = quickFindNN(finCand, "person")
-    print("finished findNN")
-    print("Finished Quick Search")
     return nomCand
     
-    print("finished quick search")
     
 def NomGather(personOrMovie, scoreDict, year):
-    print("Started loading tweets")
     basic_words = ["was", "an", "or", "a", "the", "more", 'to', "for", "golden", "globe", 's"', "in", "that", "you", "ever", "as", "be", "i", "at", "ben", "with", "and", "but", "&amp;", "is", "of", "those", "he", "she", "rt", "have", "all", "we", "so", "it", "on", "by", "les", "dress", "dressed", "this", "her"]
     punctuation = ["'", "*", ",", '"', ".", ":"]
     file_name = 'gg{}.json'.format(year)
@@ -86,7 +80,6 @@ def NomGather(personOrMovie, scoreDict, year):
     nomCand = quickFindNN(finCand, "person")
     #with open('prereadtweets.txt', 'wb') as f:
     #    pickle.dump(nomCand, f)
-    print("Finished Loading Tweets")
     return nomCand
 
 def findNN(nomCand, person):

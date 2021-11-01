@@ -144,7 +144,6 @@ def get_unique_keys(keyDict):
     tempKeys = copyKeys
 
     
-    print(tempKeys)
     return tempKeys
 
 
@@ -162,7 +161,6 @@ def get_unique_keys(keyDict):
 #testVote = nipNames(testVote)
 #print(testVote)
 def propNouns(allCan):
-    print("Starting Prop Nouns")
     nnCand = []
     nlp = spacy.load("en_core_web_sm")
     for can in allCan:
@@ -181,11 +179,9 @@ def propNouns(allCan):
                 #print("TWEET: " + " ".join(tweet) + " NAME: " +tagged_token[0])
     with open('propNouns.txt', 'wb') as f:
         pickle.dump(nnCand, f)
-    print("Finished Prop Nouns")
     return nnCand
 
 def quickPropNouns(allCan):
-    print("Starting Prop Nouns")
     nnCand = []
     nlp = spacy.load("en_core_web_sm")
     for tweet in nlp.pipe(allCan):
@@ -201,7 +197,6 @@ def quickPropNouns(allCan):
                     tempText = " ".join(tempText)
                     nnCand.append(tempText)
                 #print("TWEET: " + " ".join(tweet) + " NAME: " +tagged_token[0])
-    print("Finished Prop Nouns")
     return nnCand
 
 
@@ -226,7 +221,6 @@ def get_nominees_raw(year, awards):
             k = set(awards_keywords[i])
             b = set(word_list[j])
             if set(awards_keywords[i]) <= set(word_list[j]):
-                print("IN HERE")
                 wordList_copy = word_list[j].copy()
                 
                 # exclude awards_keywords
@@ -243,7 +237,6 @@ def get_nominees_raw(year, awards):
     return nominees_raw
 
 def matchNames(names, year, awardKeys, award_dict):
-    print("Matching Names...")
     newDict = {}
     file_name = 'gg{}.json'.format(year)
     pand = pandas.read_json(file_name)
@@ -263,13 +256,11 @@ def matchNames(names, year, awardKeys, award_dict):
                 elif len(newAdditions) > 0:
                     newDict[name] = newAdditions
     tempDict = {}
-    print("Finished Matching Names!")
     for words in newDict:
         tempDict[words] = sortVote(voteCounter(newDict[words]))
     return tempDict
 
 def quickMatchNames(names, year, awardKeys):
-    print("Matching Names...")
     newDict = {}
     counterDict = {}
     file_name = 'gg{}.json'.format(year)
@@ -283,21 +274,18 @@ def quickMatchNames(names, year, awardKeys):
             counterDict[word] = len(brandy2['text'].tolist())
         newDict[name] = counterDict
     tempDict ={}
-    print("Finished Matching Names!")
     for words in newDict:
         tempDict[words] = sortVote(newDict[words])
     return tempDict
                 
 
 def filterNames(names, awardKeys):
-    print("Started Filter Names")
     filtered = names.copy()
     for name in names:
         tempName = name.lower()
         if any(x in tempName for x in awardKeys) or names[name] < 2 or "RT" in name or "golden" in name:
             if name in filtered:
                 del(filtered[name])
-    print("Finished Filter Names!")
     return filtered
 
 def voteCategories(namesAndKeywords, awards):
@@ -397,12 +385,7 @@ def findAllNominees(year):
 
 
 def main():
-    nominees = findAllNominees(2013)
-    for award in nominees:
-        print(award)
-        print('\n')
-        print(nominees[award])
-        print('\n')
+    
     return
 
 if __name__ == '__main__':
