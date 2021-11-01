@@ -127,7 +127,7 @@ def purgeSame(sortedKeys):
             filtered[item] = store
         
     
-    for newKeys in filtered.keys():
+    for newKeys in filtered:
         call = filtered[newKeys]
         finalDict[call] = sortedKeys[call]
     return finalDict
@@ -145,6 +145,7 @@ def nipNames(sortedDict):
         if not found:
             filtered[item] = sortedDict[item]
     return filtered
+    
 
 
 
