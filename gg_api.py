@@ -71,50 +71,49 @@ def main():
     # Your code here
     finalAnswers = {"hosts": "", "award_data":""}
     awardDict = {}
-    year = 2013
-    if year <= 2015:
-        awards = OFFICIAL_AWARDS_1315
-    else:
-        awards = OFFICIAL_AWARDS_1819
-    winner_dict = get_winner(year)
-    nominee_dict = get_nominees(year)
-    presenter_dict = get_presenters(year)
-    finalAnswers["hosts"] = get_hosts(year)
-    for item in awards:
-        tempDict = {}
-        tempDict["nominees"] = nominee_dict[item]
-        tempDict["winner"] = winner_dict[item]
-        tempDict["presenters"] = presenter_dict[item]
-        awardDict[item] = tempDict
-    finalAnswers["award_data"] = awardDict
-    finalAnswers["awards"] = awards
-    finalAnswers["awards"] = get_awards(year)
-    with open("gg{}answers.json".format(year) , 'w') as f:
-        json.dump(finalAnswers, f)
+    years = [2013, 2015]
+    for year in years:
+        if year <= 2015:
+            awards = OFFICIAL_AWARDS_1315
+        else:
+            awards = OFFICIAL_AWARDS_1819
+        winner_dict = get_winner(year)
+        nominee_dict = get_nominees(year)
+        presenter_dict = get_presenters(year)
+        finalAnswers["hosts"] = get_hosts(year)
+        for item in awards:
+            tempDict = {}
+            tempDict["nominees"] = nominee_dict[item]
+            tempDict["winner"] = winner_dict[item]
+            tempDict["presenters"] = presenter_dict[item]
+            awardDict[item] = tempDict
+        finalAnswers["award_data"] = awardDict
+        finalAnswers["awards"] = awards
+        finalAnswers["awards"] = get_awards(year)
+        with open("answer{}.json".format(year) , 'w') as f:
+            json.dump(finalAnswers, f)
 
-    finalAnswers["sentiments"] = get_sentiments(year, winner_dict, finalAnswers["hosts"])
-    finalAnswers["red_carpet"] = red_carpet(year)
-    print(json.dumps(finalAnswers, sort_keys=True, indent=4))
-    
-    #with open('output{}.txt'.format(year), 'wb') as f: 
-    #    pickle.dump(str(finalAnswers), f)
-    #with open('data.json', 'w', encoding='utf-8') as f:
-    #    json.dump(finalAnswers, f, ensure_ascii=False, indent=4)
+        finalAnswers["sentiments"] = get_sentiments(year, winner_dict, finalAnswers["hosts"])
+        finalAnswers["red_carpet"] = red_carpet(year)
+        #print(json.dumps(finalAnswers, sort_keys=True, indent=4))
+        
+        #with open('output{}.txt'.format(year), 'wb') as f: 
+        #    pickle.dump(str(finalAnswers), f)
 
-    with open("gg{}answers.txt".format(year) , 'w') as f:
-        f.write('Hosts: {}\n\n'.format(', '.join(finalAnswers['hosts'])))
-        for award in finalAnswers['award_data']:
-            f.write('Award: {}\n'.format(award))
-            f.write('Presenters: {}\n'.format(', '.join(finalAnswers['award_data'][award]['presenters'])))
-            f.write('Nominees: {}\n'.format(', '.join(finalAnswers['award_data'][award]['nominees'])))
-            f.write('Winner: {}\n\n'.format(finalAnswers['award_data'][award]['winner']))
-        f.write('Best Dressed: {}\n'.format(finalAnswers['red_carpet']['best dressed']))
-        f.write('Most Controversial: {}\n'.format(finalAnswers['red_carpet']['most controversial']))
-        f.write('Worst Dressed: {}\n'.format(finalAnswers['red_carpet']['worst dressed']))
-        for person in finalAnswers['sentiments'][0]:
-            f.write('Sentiments on {}: {}\n'.format(person, finalAnswers['sentiments'][0][person]))
-    
-    #print(finalAnswers)
+        with open("answer{}.txt".format(year) , 'w') as f:
+            f.write('Hosts: {}\n\n'.format(', '.join(finalAnswers['hosts'])))
+            for award in finalAnswers['award_data']:
+                f.write('Award: {}\n'.format(award))
+                f.write('Presenters: {}\n'.format(', '.join(finalAnswers['award_data'][award]['presenters'])))
+                f.write('Nominees: {}\n'.format(', '.join(finalAnswers['award_data'][award]['nominees'])))
+                f.write('Winner: {}\n\n'.format(finalAnswers['award_data'][award]['winner']))
+            f.write('Best Dressed: {}\n'.format(finalAnswers['red_carpet']['best dressed']))
+            f.write('Most Controversial: {}\n'.format(finalAnswers['red_carpet']['most controversial']))
+            f.write('Worst Dressed: {}\n'.format(finalAnswers['red_carpet']['worst dressed']))
+            for person in finalAnswers['sentiments'][0]:
+                f.write('Sentiments on {}: {}\n'.format(person, finalAnswers['sentiments'][0][person]))
+        
+        #print(finalAnswers)
 
 
     return
