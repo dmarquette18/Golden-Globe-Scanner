@@ -293,10 +293,10 @@ def filterNames(names, awardKeys):
     print("Started Filter Names")
     filtered = names.copy()
     for name in names:
-        for award in awardKeys:
-            if award in name or names[name] < 2 or "RT" in name or "golden" in name:
-                if name in filtered:
-                    del(filtered[name])
+        tempName = name.lower()
+        if any(x in tempName for x in awardKeys) or names[name] < 2 or "RT" in name or "golden" in name:
+            if name in filtered:
+                del(filtered[name])
     print("Finished Filter Names!")
     return filtered
 
