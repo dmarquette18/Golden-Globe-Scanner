@@ -109,7 +109,7 @@ def findPresenters(awardNames, awardWeights, scanDict):
 #    for wrd, count in ppl[person].items():
 #        print('\t', wrd, ': ', count)
 
-def presenters(year):
+def get_presenter(year):
     award_names = chooseAwards(year)
     award_words = awardWords(year)
     df = data(year)
@@ -120,7 +120,7 @@ def presenters(year):
     #for key, value in final.items():
     #    print(key, ': ', value)
 """    
-fin = presenters(2013)
+fin = get_presenters(2013)
 for key, value in fin.items():
     print(key, ': ', value)
 """
