@@ -1,15 +1,18 @@
 import pandas as pd
 import numpy as np 
-import nltk
 import pickle
 
-# import spacy
-# from spacy.matcher import Matcher
-# nlp = spacy.load("en_core_web_sm")
+import spacy
+import nltk
+from spacy.matcher import Matcher
+from spacy.matcher import PhraseMatcher
+nlp = spacy.load("en_core_web_sm")
 from nltk import word_tokenize, pos_tag_sents, pos_tag
+from nltk.corpus import stopwords
 nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('tagsets')
+nltk.download('stopwords')
 
 with open("official_list.txt", 'rb') as f:
     OFFICIAL_AWARDS_1315, OFFICIAL_AWARDS_1819 = pickle.load(f)
@@ -22,23 +25,23 @@ def get_data(year):
 def extraction_winner_one_word(tweet: str, criteria: str, forward: bool): 
     candidate_answers = {}
     splits = word_tokenize(tweet)
+    splits = [w for w in splits if not w.lower() in gg and w.lower().isalpha()]
     tags = pos_tag(splits)
     try: 
         index = splits.index(criteria)
     except ValueError: 
-        return None
+        index = -1
     if forward: 
         while index > 0:
             index -= 1
             if tags[index][1] == 'NNP' and tags[index-1][1] == 'NNP': 
-                if splits[index] not in gg and splits[index-1] not in gg: 
-                    name = splits[index-1] + " " + splits[index]
-                    if name in candidate_answers:
-                        candidate_answers[name] += 1
-                    else: 
-                        candidate_answers[name] = 1
+                name = splits[index-1].lower() + " " + splits[index].lower()
+                if name in candidate_answers:
+                    candidate_answers[name] += 1
+                else: 
+                    candidate_answers[name] = 1
     else: 
-        while index < len(splits) - 1: 
+        while index < len(splits) - 2: 
             index += 1
             if tags[index][1] == 'NNP':  
                 curr = curr + " " + splits[index]
@@ -47,56 +50,105 @@ def extraction_winner_one_word(tweet: str, criteria: str, forward: bool):
     #sort the dict and return the highest vote result
     candidate_answers = sorted(candidate_answers.keys(), key = lambda item: item[1], reverse=True)
     if len(candidate_answers) == 0:
+        return np.nan
+    return candidate_answers
+    
+    #sort the dict and return the highest vote result
+    candidate_answers = sorted(candidate_answers.keys(), key = lambda item: item[1], reverse=True)
+    if len(candidate_answers) == 0:
         return None
     return candidate_answers
 
 def extraction_winner_two_words(tweet: str, criteria: str, forward: bool): 
-    candidate_answers = []
-    splits = tweet.lower().split()
-    count = 0
-    index = None
-    for i in range(len(splits) - 1):
-        if splits[i] == criteria.split()[0] and splits[i+1] == criteria.split()[1]:
-            index = i
-    if index == None:
-        return None 
-    curr = ""
-    if forward: 
-        while index >= 0:
-            index -= 1
-            curr = splits[index] + " " + curr
-            candidate_answers.append(curr)
-    else:  
-        index += 2
-        while index < len(splits):
-            curr = curr + " " + splits[index]
-            candidate_answers.append(curr) 
-            index += 1
-    return vote_candidate(candidate_answers)
+    candidate_answers = {}
+    splits = word_tokenize(tweet)
+    splits = [w for w in splits if not w.lower() in gg and w.lower().isalpha()]
+    tags = pos_tag(splits)
+    matcher = PhraseMatcher(nlp.vocab)
+    patterns = [nlp.make_doc(criteria)]
+    matcher.add(criteria, patterns)
+    doc = nlp(tweet)
+    matches = matcher(doc)
+    persons = [ent.text for ent in doc.ents if ent.label_ == 'PERSON']
+    for person in persons: 
+        valid = True
+        for word in person: 
+            if word.lower() in gg or not word.lower().isalpha():
+                valid = False
+        if valid: 
+            candidate_answers[person] = 1
+    for match_id, start, end in matches:
+        if forward: 
+            while start > 1: 
+                start -= 1
+                if tags[start][1] == 'NNP' and tags[start-1][1] == 'NNP': 
+                    name = splits[start-1].lower() + " " + splits[start].lower()
+                    if name in candidate_answers:
+                        candidate_answers[name] += 1
+                    else: 
+                        candidate_answers[name] = 1
+        else: 
+            while end < len(splits) - 2: 
+                if tags[end][1] == 'NNP' and tags[end+1][1] == 'NNP': 
+                    name = splits[end].lower() + " " + splits[end+1].lower()
+                    if name in candidate_answers:
+                        candidate_answers[name] += 1
+                    else: 
+                        candidate_answers[name] = 1
+                end += 1
+        
+    #sort the dict and return the highest vote result
+    candidate_answers = sorted(candidate_answers.keys(), key = lambda item: item[1], reverse=True)
+    if len(candidate_answers) == 0:
+        return np.nan
+    return candidate_answers
 
-def vote_candidate(candidates: list):
-    cand = dict()
-    for curr in candidates:
-        splits = curr.split()
-        string = splits[0]
-        index = 0
-        while index < len(splits) - 1:
-            if string in cand:
-                cand[string]+=1
-            else:
-                cand[string]=1
-            index += 1
-            string = string + " " + splits[index]
-    return sorted(cand.items(), key = lambda item: item[1], reverse=True)[:2]
+def get_candidates(df, criterias, func, forward):
+    df = df.drop(['user','id','timestamp_ms'], axis=1)
+    df_answers = pd.DataFrame(np.nan, index=range(0, df.shape[0]), columns = criterias)
+    for criteria in criterias: 
+        copy = df[df['text'].str.contains(criteria)].copy()
+        df_answers[criteria] = copy['text'].apply(func=func, args=(criteria, forward))
+    return df_answers.dropna(how='all')
 
-def get_candidates(df, criteria, func, forward):
-    df_answers = pd.DataFrame(columns=[criteria]) 
-    df_answers[criteria] = pd.Series(np.vectorize(func)(df['text'], [criteria for _ in range(df.shape[0])], [forward for _ in range(df.shape[0])]))
-    #df_answers[criteria] = pd.Series(map(func, df['text'], [criteria for _ in range(df.shape[0])], [forward for _ in range(df.shape[0])]))
-    return df_answers.dropna(how="all")
+def get_candidates_df(df, before_list, after_list):
+    result_before_one_word = get_candidates(df, before_list, extraction_winner_one_word, True)
+    result_after_two_words = get_candidates(df, after_list, extraction_winner_two_words, False)
+    candidates_df = result_after_two_words.join(result_before_one_word, how='outer')
+    return candidates_df
 
-def getDfCandidateText(df, filterDf):
-    return df.filter(items = filterDf.index, axis = 0).merge(filterDf, left_index=True, right_index=True).drop(['user','id','timestamp_ms'], axis=1)
+def process_sub_df(df, candidates_df, awards_dict):
+    award_winner = {}
+    award_nominees = {}
+    for award in awards_dict: 
+        award_winner[award] = []
+    for col in candidates_df: 
+        series = candidates_df[col].dropna()
+        sub = df.filter(items = series.index, axis = 0).merge(series, left_index=True, right_index=True).drop(['user','id','timestamp_ms'], axis=1)
+        sub_result = result_find_official_awards(sub, awards_dict)
+        for award in awards_dict:
+            for name in sub_result[award]:
+                award_winner[award].append(name)
+    for award in award_winner:  
+        count_dict = {}
+        name_list = award_winner[award]
+        for t in name_list:
+            name, count = t[0], t[1]
+            if name in count_dict: 
+                count_dict[name] += count
+            else: 
+                count_dict[name] = 1
+        result = sorted(count_dict.items(), key = lambda key: key[1], reverse=True)
+        print(result)
+        award_winner[award] = result[0][0]
+        names = []
+        for i in range(1,5): 
+            if i > len(result) - 1:
+                break
+            names.append(result[i][0])
+        award_nominees[award] = names
+    return [award_winner, award_nominees]
+
 
 def countResult(name_list): 
     count = {}
@@ -106,16 +158,6 @@ def countResult(name_list):
         else: 
             count[name] += 1
     return sorted(count.items(), key = lambda item:item[1], reverse=True)
-
-def resultFindAward(df, criteria, awards):
-    award_winner = {}
-    def find_award(tweet, names): 
-        index = -1
-        for award in awards:
-            if award in tweet:
-                award_winner[award] = names[0]
-    np.vectorize(find_award)(df['text'], df[criteria])
-    return sorted(award_winner.items(), key = lambda item:item[1], reverse=True)  
 
 def convert_official_to_dict(official): 
     official_to_abbr = {}
@@ -128,14 +170,33 @@ def convert_official_to_dict(official):
         official_to_abbr[row] = abbr
     return official_to_abbr
 
-def check_award_present(award_dict, award, tweet, names): 
-    count = 0
-    for word in award_dict[award]:
-        if word in tweet: 
-            count += 1
-    if (len(award_dict[award]) > 4 and count >= 4) or (len(award_dict[award]) <= 4 and count >= 3): 
-        return names
-    return []
+def check_award_present(award_dict, tweet, names): 
+    max_count = 0
+    max_award = []
+    for award in award_dict: 
+        count = 0
+        for word in award_dict[award]:
+            if word in tweet: 
+                count += 1
+        if count == max_count:
+            max_award.append(award)
+        elif count > max_count:
+            max_count = count 
+            max_award = [award]
+    award_name = {}
+    if max_count >= 3: 
+        for award in max_award: 
+            if 'actor' in award_dict[award] and 'actor' in tweet: 
+                award_name[award] = names
+            elif 'actress' in award_dict[award] and 'actress' in tweet: 
+                award_name[award] = names
+            elif 'television' in award_dict[award] and ('television' in tweet or 'tv' in tweet): 
+                award_name[award] = names
+            elif 'supporting' in award_dict[award] and 'supporting' in tweet: 
+                award_name[award] = names
+            elif 'actor' not in award_dict[award] and 'actress' not in award_dict[award] and 'supporting' not in award_dict[award] and 'television' not in award_dict[award]:
+                award_name[award] = names
+    return award_name
 
 def result_find_official_awards(df, awards_dict):
     copy = df.copy(deep=False)
@@ -145,27 +206,24 @@ def result_find_official_awards(df, awards_dict):
     for row in copy.itertuples(index = False): 
         tweet = row.text.lower()
         names = row[1]
-        for award in awards_dict:
-            result = check_award_present(awards_dict, award, tweet, names)
-            if len(result) > 0: 
-                for name in result: 
-                    award_winner[award].append(name)
+        result = check_award_present(awards_dict, tweet, names)
+        for award in result: 
+            names = result[award]
+            for name in names: 
+                award_winner[award].append(name)
     for key in award_winner: 
         #name count for each award in the award_winner dict
         #count would be the name of the highest count
         count = countResult(award_winner[key]) 
         if len(count) != 0:
-            award_winner[key] = count[0][0]
+            award_winner[key] = count
     return award_winner 
 
-before_list = ['won', 'wins', 'winning', 'win', 'got', 'getting', 'gets', 'get', 'took', 'takes', 'taking',
-               'take', 'deserves', 'accepts', 'accepted', 'honored', 'nominated', 'receives', 'received']
-before_double_list = ['for winning', 'getting nominated','was named' ]
+before_list = ['nominated','won', 'wins','honored']
 
-after_list =  ['congratulates', 'announce', 'nominated', 'wtf', 'nominee']
-after_double_list = ['goes to', 'awarded to', 'cheer for', 'cheering for', 'cheering on', 'congratulations to']
+after_list =  ['goes to']
 
-gg = ['golden', 'globe', 'globes', 'Golden', 'Globe', 'Globes', 'goldenglobes', 'GoldenGlobes','RT', '@', 'a', 'A', 'God', 'god', 'thank', 'Thank',"'\'"]
+gg = ['golden', 'globe', 'globes','goldenglobes', 'rt', '@', 'a', 'God', 'thank', "'\'", 'lmao','hi','hey','fuck','wtf','yes']
 
 drop_list = ['by', 'in', 'a', '-', 'or', 'an', ',', 'for', 'role','made']
 
@@ -179,10 +237,26 @@ drop_list = ['by', 'in', 'a', '-', 'or', 'an', ',', 'for', 'role','made']
 
 # result_find_official_awards(sub2013, awards_dict)
 
-def winner(year): 
+result = []
+
+def get_result(year): 
     df = get_data(year)
-    result_before_one_word = get_candidates(df, 'won', extraction_winner_one_word, True)
-    sub = getDfCandidateText(df, result_before_one_word)
-    awards_dict = convert_official_to_dict(OFFICIAL_AWARDS_1315)
-    result = result_find_official_awards(sub, awards_dict)
+    candidates_df = get_candidates_df(df, before_list, after_list)
+    if year <= 2015:
+        awards_dict = convert_official_to_dict(OFFICIAL_AWARDS_1315)
+    else:
+        awards_dict = convert_official_to_dict(OFFICIAL_AWARDS_1819)
+    result = process_sub_df(df, candidates_df, awards_dict)
     return result
+
+def get_winners(year): 
+    if len(result) == 0:
+        return get_result(year)[0]
+    else: 
+        return result[0]
+
+def get_nominee(year): 
+    if len(result) == 0:
+        return get_result(year)[1]
+    else: 
+        return result[1]
