@@ -78,23 +78,21 @@ def main():
         awards = OFFICIAL_AWARDS_1819
     winner_dict = get_winner(year)
     nominee_dict = get_nominees(year)
-    #presenter_dict = get_presenters(year)
-    #nominee_dict = get_nominees(year)
-    # presenter_dict = get_presenters(year)
+    presenter_dict = get_presenters(year)
     finalAnswers["hosts"] = get_hosts(year)
     for item in awards:
         tempDict = {}
         tempDict["nominees"] = nominee_dict[item]
         tempDict["winner"] = winner_dict[item]
-        #tempDict["presenters"] = presenter_dict[item]
+        tempDict["presenters"] = presenter_dict[item]
         awardDict[item] = tempDict
     finalAnswers["award_data"] = awardDict
     finalAnswers["awards"] = awards
-    #finalAnswers["awards"] = get_awards(year)
+    finalAnswers["awards"] = get_awards(year)
     with open("gg{}answers.json".format(year) , 'w') as f:
         json.dump(finalAnswers, f)
 
-    #finalAnswers["sentiments"] = get_sentiments(year, winner_dict, presenter_dict)
+    finalAnswers["sentiments"] = get_sentiments(year, winner_dict, finalAnswers["hosts"])
     finalAnswers["red_carpet"] = red_carpet(year)
     print(json.dumps(finalAnswers, sort_keys=True, indent=4))
     with open('output{}.txt'.format(year), 'wb') as f: 

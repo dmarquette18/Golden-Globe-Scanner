@@ -58,7 +58,7 @@ def get_sentiment(df, lis):
             result_sentiment[winner]= 'neutral'
     return result_sentiment
 
-def get_sentiments(year, winner_dict, presenter_dict):
+def get_sentiments(year, winner_dict, host_list):
     df = get_data(year)
     if year <= 2015:
         awards_dict = convert_official_to_dict(OFFICIAL_AWARDS_1315)
@@ -67,10 +67,9 @@ def get_sentiments(year, winner_dict, presenter_dict):
     winner_list = get_list_from_dict(winner_dict)
     winner_df = get_tweets_from_list(df, winner_list).dropna(how='all')
     winner_sentiment = get_sentiment(winner_df, winner_list)
-
-    presenter_list = get_list_from_dict(presenter_dict)
-    presenter_df = get_tweets_from_list(df, presenter_list).dropna(how='all')
-    presenter_sentiment = get_sentiment(presenter_df, winner_list)
+    
+    host_df = get_tweets_from_list(df, host_list).dropna(how='all')
+    host_sentiment = get_sentiment(host_df, host_list)
 
     # award_list = get_list_from_dict(awards_dict)
     # award_df = get_tweets_from_list(df, award_list).dropna(how='all')
