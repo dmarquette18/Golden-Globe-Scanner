@@ -100,7 +100,7 @@ def main():
         #with open('output{}.txt'.format(year), 'wb') as f: 
         #    pickle.dump(str(finalAnswers), f)
 
-        with open("answer{}.txt".format(year) , 'w') as f:
+        with open("answer{}.txt".format(year) , 'w', encoding='utf-8') as f:
             f.write('Hosts: {}\n\n'.format(', '.join(finalAnswers['hosts'])))
             for award in finalAnswers['award_data']:
                 f.write('Award: {}\n'.format(award))
