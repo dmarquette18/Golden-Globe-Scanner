@@ -24,22 +24,27 @@ def get_awards(year):
     '''Awards is a list of strings. Do NOT change the name
     of this function or what it returns.'''
     # Your code here
-    awards = findAwardNames(year)
-    return awards
+ #   awards = findAwardNames(year)
+    return {}
 
 def get_nominees(year):
     '''Nominees is a dictionary with the hard coded award
     names as keys, and each entry a list of strings. Do NOT change
     the name of this function or what it returns.'''
+<<<<<<< HEAD
     nominees = findAllNominees(year)
     return nominees
+=======
+    # Your code here
+    return {}
+>>>>>>> 4022bc80e2e235dd1801350d09a24ed2aea3328d
 
 def get_winner(year):
     '''Winners is a dictionary with the hard coded award
     names as keys, and each entry containing a single string.
     Do NOT change the name of this function or what it returns'''
     # Your code here
-    winners = winner(year)
+    winners = winner(int(year))
     return winners
 
 def get_presenters(year):
@@ -47,7 +52,7 @@ def get_presenters(year):
     names as keys, and each entry a list of strings. Do NOT change the
     name of this function or what it returns.'''
     # Your code here
-    presenters = presenter(year)
+    presenters = presenter(int(year))
     return presenters
 
 def pre_ceremony():
@@ -74,23 +79,33 @@ def main():
     else:
         awards = OFFICIAL_AWARDS_1819
     winner_dict = get_winner(year)
+<<<<<<< HEAD
     #nominee_dict = get_nominees(year)
     # presenter_dict = get_presenters(year)
+=======
+    # nominee_dict = get_nominees(year)
+    presenter_dict = get_presenters(year)
+    finalAnswers["hosts"] = get_hosts(year)
+>>>>>>> 4022bc80e2e235dd1801350d09a24ed2aea3328d
     for item in awards:
         tempDict = {}
     #     tempDict["nominees"] = nominee_dict[item]
         tempDict["winner"] = winner_dict[item]
+        tempDict["presenters"] = presenter_dict[item]
+        tempDict["nominees"] = []
     #     tempDict["presenters"] = presenter_dict[item]
         awardDict[item] = tempDict
     finalAnswers["award_data"] = awardDict
-    # finalAnswers["hosts"] = get_hosts(year)
+    finalAnswers["awards"] = awards
     #finalAnswers["awards"] = get_awards(year)
-
-    finalAnswers["sentiments"] = get_sentiments(year, winner_dict)
-    finalAnswers["red_carpet"] = red_carpet(year)
-    print(finalAnswers)
-    with open("answer.json" , 'w') as f:
+    with open("gg{}answers.json".format(year) , 'w') as f:
         json.dump(finalAnswers, f)
+
+    finalAnswers["sentiments"] = get_sentiments(year, winner_dict, presenter_dict)
+    finalAnswers["red_carpet"] = red_carpet(year)
+    print(json.dumps(finalAnswers, sort_keys=True, indent=4))
+    with open('output{}.txt'.format(year), 'wb') as f: 
+        pickle.dump(finalAnswers, f)
     return
 
 if __name__ == '__main__':
