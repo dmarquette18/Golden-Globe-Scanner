@@ -96,8 +96,27 @@ def main():
     finalAnswers["red_carpet"] = red_carpet(year)
     print(json.dumps(finalAnswers, sort_keys=True, indent=4))
     
-    with open('output{}.txt'.format(year), 'wb') as f: 
-        pickle.dump(str(finalAnswers), f)
+    #with open('output{}.txt'.format(year), 'wb') as f: 
+    #    pickle.dump(str(finalAnswers), f)
+    #with open('data.json', 'w', encoding='utf-8') as f:
+    #    json.dump(finalAnswers, f, ensure_ascii=False, indent=4)
+
+    with open("gg{}answers.txt".format(year) , 'w') as f:
+        f.write('Hosts: {}\n\n'.format(', '.join(finalAnswers['hosts'])))
+        for award in finalAnswers['award_data']:
+            f.write('Award: {}\n'.format(award))
+            f.write('Presenters: {}\n'.format(', '.join(finalAnswers['award_data'][award]['presenters'])))
+            f.write('Nominees: {}\n'.format(', '.join(finalAnswers['award_data'][award]['nominees'])))
+            f.write('Winner: {}\n\n'.format(finalAnswers['award_data'][award]['winner']))
+        f.write('Best Dressed: {}\n'.format(finalAnswers['red_carpet']['best dressed']))
+        f.write('Most Controversial: {}\n'.format(finalAnswers['red_carpet']['most controversial']))
+        f.write('Worst Dressed: {}\n'.format(finalAnswers['red_carpet']['worst dressed']))
+        for person in finalAnswers['sentiments'][0]:
+            f.write('Sentiments on {}: {}\n'.format(person, finalAnswers['sentiments'][0][person]))
+    
+    #print(finalAnswers)
+
+
     return
 
 if __name__ == '__main__':
