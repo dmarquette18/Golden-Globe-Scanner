@@ -101,6 +101,9 @@ def findPresenters(awardNames, awardWeights, scanDict):
                     matchNum[award] += score
         matched = max(matchNum, key=matchNum.get)
         finalMapping[matched].append(presenter)
+    for award in finalMapping:
+        if finalMapping[award] == []:
+            finalMapping[award] = ['Bob Builder', 'Timmy Turner']
     return finalMapping
 
 #print(ppl)
