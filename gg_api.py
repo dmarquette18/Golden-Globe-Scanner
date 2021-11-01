@@ -92,7 +92,7 @@ def main():
     with open("gg{}answers.json".format(year) , 'w') as f:
         json.dump(finalAnswers, f)
 
-    finalAnswers["sentiments"] = get_sentiments(year, winner_dict, host_list)
+    finalAnswers["sentiments"] = get_sentiments(year, winner_dict, finalAnswers["hosts"])
     finalAnswers["red_carpet"] = red_carpet(year)
     print(json.dumps(finalAnswers, sort_keys=True, indent=4))
     with open('output{}.txt'.format(year), 'wb') as f: 
