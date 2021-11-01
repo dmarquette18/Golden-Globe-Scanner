@@ -5,6 +5,7 @@ from winner import winner
 from presenter import presenter
 from AwardNames import findAwardNames
 from sentiment import get_sentiments
+from NomineeGather import findAllNominees
 from redCarpet import red_carpet
 import pickle
 import json 
@@ -30,7 +31,7 @@ def get_nominees(year):
     '''Nominees is a dictionary with the hard coded award
     names as keys, and each entry a list of strings. Do NOT change
     the name of this function or what it returns.'''
-    # Your code here
+    nominees = findAllNominees(year)
     return nominees
 
 def get_winner(year):
@@ -73,7 +74,7 @@ def main():
     else:
         awards = OFFICIAL_AWARDS_1819
     winner_dict = get_winner(year)
-    # nominee_dict = get_nominees(year)
+    #nominee_dict = get_nominees(year)
     # presenter_dict = get_presenters(year)
     for item in awards:
         tempDict = {}
