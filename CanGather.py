@@ -1,5 +1,3 @@
-from typing import final
-
 
 def canGather(ind, tweet, type):
     basic_word_dict = ["-", ":", ",", " - "]

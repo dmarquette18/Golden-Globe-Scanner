@@ -74,5 +74,5 @@ def get_sentiments(year, winner_dict, host_list):
     # award_list = get_list_from_dict(awards_dict)
     # award_df = get_tweets_from_list(df, award_list).dropna(how='all')
     # award_sentiment = get_sentiment(award_df, award_list)
-    return [winner_sentiment, presenter_sentiment]
+    return [winner_sentiment]
             

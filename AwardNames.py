@@ -182,8 +182,9 @@ def findAwardNames(year):
     sorted = trimToBest(sorted)
     sorted = purgeSame(sorted)
     sorted = nipNames(sorted)
-    print(sorted)
     sorted = sortVote(sorted)
     newSorted = []
     for l in list(reversed(list(sorted)))[0:20]:
         newSorted.append(l)
+    return newSorted
+

@@ -2,7 +2,7 @@
 
 from host import host
 from winner import get_winners, get_nominee
-from presenter import presenter
+from presenter import get_presenter
 from AwardNames import findAwardNames
 from sentiment import get_sentiments
 from NomineeGather import findAllNominees
@@ -26,8 +26,8 @@ def get_awards(year):
     '''Awards is a list of strings. Do NOT change the name
     of this function or what it returns.'''
     # Your code here
- #   awards = findAwardNames(year)
-    return {}
+    awards = findAwardNames(year)
+    return awards
 
 def get_nominees(year):
     '''Nominees is a dictionary with the hard coded award
@@ -50,7 +50,7 @@ def get_presenters(year):
     names as keys, and each entry a list of strings. Do NOT change the
     name of this function or what it returns.'''
     # Your code here
-    presenters = presenter(int(year))
+    presenters = get_presenter(int(year))
     return presenters
 
 def pre_ceremony():
@@ -95,6 +95,7 @@ def main():
     finalAnswers["sentiments"] = get_sentiments(year, winner_dict, finalAnswers["hosts"])
     finalAnswers["red_carpet"] = red_carpet(year)
     print(json.dumps(finalAnswers, sort_keys=True, indent=4))
+    
     with open('output{}.txt'.format(year), 'wb') as f: 
         pickle.dump(str(finalAnswers), f)
     return
