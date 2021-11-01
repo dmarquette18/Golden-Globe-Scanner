@@ -251,6 +251,7 @@ def matchNames(names, year, awardKeys, award_dict):
         tweet = row[1]
         tweet = tweet.lower()
         for name in names:
+            name = name.lower()
             if name in tweet:
                 newAdditions = []
                 for word in awardKeys:
@@ -290,8 +291,6 @@ def quickMatchNames(names, year, awardKeys):
 
 def filterNames(names, awardKeys):
     print("Started Filter Names")
-    alp = "a b c d e f g h i j k l m n o p q r s t u v w x y z"
-    alp = alp.split()
     filtered = names.copy()
     for name in names:
         for award in awardKeys:
@@ -398,7 +397,7 @@ def findAllNominees(year):
 
 
 def main():
-    nominees = findAllNominees(2015)
+    nominees = findAllNominees(2013)
     for award in nominees:
         print(award)
         print('\n')
