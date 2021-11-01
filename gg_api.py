@@ -98,7 +98,7 @@ def main():
     finalAnswers["red_carpet"] = red_carpet(year)
     print(json.dumps(finalAnswers, sort_keys=True, indent=4))
     with open('output{}.txt'.format(year), 'wb') as f: 
-        pickle.dump(finalAnswers, f)
+        pickle.dump(str(finalAnswers), f)
     return
 
 if __name__ == '__main__':
